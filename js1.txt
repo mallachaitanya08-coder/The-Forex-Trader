@@ -1,0 +1,120 @@
+// Configuration & State
+const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'INR'];
+let state = {
+    balance: 10000,
+    currentPair: 'EUR/USD',
+    priceHistory: Array.from({length: 20}, () => 1.05 + Math.random() * 0.1),
+    positions: [],
+    currentPrice: 1.0852
+};
+
+// Initialize UI
+const fromSelect = document.getElementById('fromCurrency');
+const toSelect = document.getElementById('toCurrency');
+const balanceEl = document.getElementById('balance');
+const positionsEl = document.getElementById('positionsList');
+
+currencies.forEach(cur => {
+    fromSelect.add(new Option(cur, cur));
+    toSelect.add(new Option(cur, cur));
+});
+fromSelect.value = 'EUR';
+toSelect.value = 'USD';
+
+// --- CHART LOGIC ---
+const ctx = document.getElementById('marketChart').getContext('2d');
+let chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: Array(20).fill(''),
+        datasets: [{
+            label: 'Market Price',
+            data: state.priceHistory,
+            borderColor: '#00c087',
+            tension: 0.3,
+            fill: true,
+            backgroundColor: 'rgba(0, 192, 135, 0.1)'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { display: false }, y: { grid: { color: '#2b2f36' } } }
+    }
+});
+
+// --- MARKET SIMULATION ENGINE ---
+function updateMarket() {
+    const volatility = 0.002;
+    const change = (Math.random() - 0.5) * volatility;
+    state.currentPrice += change;
+    
+    state.priceHistory.push(state.currentPrice);
+    if(state.priceHistory.length > 20) state.priceHistory.shift();
+    
+    chart.data.datasets[0].data = state.priceHistory;
+    chart.data.datasets[0].borderColor = change >= 0 ? '#00c087' : '#f84960';
+    chart.update('none');
+
+    updateConverter();
+    updatePositions();
+}
+
+// --- CONVERTER LOGIC ---
+function updateConverter() {
+    const amount = document.getElementById('convertAmount').value;
+    // For demo, we use the simulated price if USD/EUR is picked, else random static rate
+    const mockRate = state.currentPrice; 
+    const result = amount * mockRate;
+    document.getElementById('resultDisplay').innerText = `${result.toFixed(2)} ${toSelect.value}`;
+}
+
+// --- TRADING MECHANICS ---
+function executeTrade(type) {
+    const trade = {
+        id: Date.now(),
+        type: type,
+        entry: state.currentPrice,
+        size: 1000, // Standard Micro Lot
+    };
+    state.positions.push(trade);
+    renderPositions();
+}
+
+function updatePositions() {
+    if (state.positions.length === 0) return;
+    renderPositions();
+}
+
+function renderPositions() {
+    positionsEl.innerHTML = state.positions.map(p => {
+        const pnl = (p.type === 'BUY' ? (state.currentPrice - p.entry) : (p.entry - state.currentPrice)) * p.size;
+        return `
+            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+                <span>${p.type} ${state.currentPair}</span>
+                <span class="${pnl >= 0 ? 'text-green-400' : 'text-red-400'}">
+                    ${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
+                </span>
+                <button onclick="closeTrade(${p.id}, ${pnl})" class="text-[10px] bg-gray-700 px-2 rounded">Close</button>
+            </div>
+        `;
+    }).join('');
+}
+
+function closeTrade(id, pnl) {
+    state.balance += pnl;
+    state.positions = state.positions.filter(p => p.id !== id);
+    balanceEl.innerText = `$${state.balance.toFixed(2)}`;
+    renderPositions();
+    checkLevelUp();
+}
+
+function checkLevelUp() {
+    const rankEl = document.getElementById('rank');
+    if (state.balance > 11000) rankEl.innerText = "Pro Trader";
+    else if (state.balance > 10500) rankEl.innerText = "Advanced";
+}
+
+// Run Market every 2 seconds
+setInterval(updateMarket, 2000);

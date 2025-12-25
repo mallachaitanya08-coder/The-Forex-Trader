@@ -1,0 +1,123 @@
+/* Custom properties for a consistent "Forex" palette */
+:root {
+    --bg-main: #0b0e11;
+    --bg-card: #161a1e;
+    --bg-input: #2b2f36;
+    --text-primary: #eaecef;
+    --text-secondary: #848e9c;
+    --accent-gold: #f0b90b;
+    --trade-green: #00c087;
+    --trade-red: #f84960;
+    --border-color: #2b2f36;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+}
+
+/* --- Layout Components --- */
+
+.glass-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.glass-card:hover {
+    border-color: #474d57;
+}
+
+/* --- Converter UI --- */
+
+select, input {
+    background-color: var(--bg-input);
+    color: white;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+select:focus, input:focus {
+    border-color: var(--accent-gold);
+}
+
+/* --- Trading Buttons --- */
+
+.btn-buy {
+    background-color: var(--trade-green);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(0, 192, 135, 0.3);
+}
+
+.btn-buy:active {
+    transform: scale(0.98);
+}
+
+.btn-sell {
+    background-color: var(--trade-red);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(248, 73, 96, 0.3);
+}
+
+.btn-sell:active {
+    transform: scale(0.98);
+}
+
+/* --- Animations & Effects --- */
+
+@keyframes pulse-green {
+    0% { color: var(--trade-green); }
+    50% { color: #57ffcd; }
+    100% { color: var(--trade-green); }
+}
+
+.price-up {
+    animation: pulse-green 0.5s ease-in-out;
+}
+
+/* Scrollbar Styling for that 'Pro' look */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #474d57;
+}
+
+/* Responsive Grid for the Dashboard */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
